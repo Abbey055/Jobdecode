@@ -11,10 +11,16 @@ import '../features/home/presentation/home_screen.dart';
 import '../features/premium/presentation/premium_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/saved/presentation/saved_screen.dart';
+import '../features/splash/presentation/splash_screen.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/splash',
   routes: [
+    GoRoute(
+      path: '/splash',
+      pageBuilder: (context, state) =>
+          NoTransitionPage(key: state.pageKey, child: const SplashScreen()),
+    ),
     GoRoute(
       path: '/',
       pageBuilder: (context, state) =>

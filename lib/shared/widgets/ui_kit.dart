@@ -102,36 +102,103 @@ class InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 20,
-            color: iconColor ?? Theme.of(context).colorScheme.onSurface,
+    final displayValue = value.trim().isEmpty ? 'Not listed' : value.trim();
+    final labelStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      color: AppColors.muted,
+      fontWeight: FontWeight.w700,
+      fontSize: 12,
+    );
+    final valueStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      fontWeight: FontWeight.w800,
+      fontSize: 13,
+      height: 1.35,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final shouldStack =
+            constraints.maxWidth < 320 || displayValue.length > 34;
+
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: shouldStack ? 14 : 12),
+          child: shouldStack
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _InfoRowLabel(
+                      icon: icon,
+                      iconColor: iconColor,
+                      label: label,
+                      style: labelStyle,
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 32),
+                      child: Text(displayValue, style: valueStyle),
+                    ),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 126,
+                      child: _InfoRowLabel(
+                        icon: icon,
+                        iconColor: iconColor,
+                        label: label,
+                        style: labelStyle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        displayValue,
+                        textAlign: TextAlign.right,
+                        style: valueStyle,
+                      ),
+                    ),
+                  ],
+                ),
+        );
+      },
+    );
+  }
+}
+
+class _InfoRowLabel extends StatelessWidget {
+  const _InfoRowLabel({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.style,
+  });
+
+  final IconData icon;
+  final Color? iconColor;
+  final String label;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 19,
+          color: iconColor ?? Theme.of(context).colorScheme.onSurface,
+        ),
+        const SizedBox(width: 10),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.muted,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Flexible(
-            child: Text(
-              value.isEmpty ? 'Not listed' : value,
-              textAlign: TextAlign.right,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
