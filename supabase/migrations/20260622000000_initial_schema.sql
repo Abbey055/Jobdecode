@@ -71,6 +71,9 @@ create index if not exists job_analyses_created_at_idx
 create index if not exists saved_jobs_user_id_idx
   on public.saved_jobs(user_id);
 
+create index if not exists saved_jobs_job_analysis_id_idx
+  on public.saved_jobs(job_analysis_id);
+
 alter table public.job_analyses enable row level security;
 alter table public.saved_jobs enable row level security;
 
@@ -95,9 +98,20 @@ drop policy if exists "Users can save jobs"
 drop policy if exists "Users can remove saved jobs"
   on public.saved_jobs;
 
+drop policy if exists "Users can update saved jobs"
+  on public.saved_jobs;
+
 create policy "Users can read their analyses"
   on public.job_analyses for select
-  using (auth.uid() = user_id);
+  using (
+    auth.uid() = user_id
+    or exists (
+      select 1
+      from public.saved_jobs
+      where saved_jobs.job_analysis_id = job_analyses.id
+        and saved_jobs.user_id = auth.uid()
+    )
+  );
 
 create policy "Users can create their analyses"
   on public.job_analyses for insert
@@ -118,6 +132,11 @@ create policy "Users can read saved jobs"
 
 create policy "Users can save jobs"
   on public.saved_jobs for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update saved jobs"
+  on public.saved_jobs for update
+  using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
 create policy "Users can remove saved jobs"

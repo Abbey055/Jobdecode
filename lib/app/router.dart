@@ -19,7 +19,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/',
       pageBuilder: (context, state) =>
-          _fadePage(state.pageKey, const HomeScreen()),
+          NoTransitionPage(key: state.pageKey, child: const HomeScreen()),
     ),
     GoRoute(
       path: '/loading',

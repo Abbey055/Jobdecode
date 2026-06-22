@@ -61,16 +61,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 return Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(right: index == 2 ? 0 : 8),
-                    child: ChoiceChip(
+                    child: _FilterButton(
                       selected: selected,
-                      label: Center(child: Text(label)),
-                      onSelected: (_) => setState(() => _filter = label),
-                      selectedColor: AppColors.primary,
-                      labelStyle: TextStyle(
-                        color: selected ? Colors.white : AppColors.ink,
-                        fontWeight: FontWeight.w800,
-                      ),
-                      side: const BorderSide(color: AppColors.border),
+                      label: label,
+                      onTap: () => setState(() => _filter = label),
                     ),
                   ),
                 );
@@ -228,7 +222,12 @@ class _HistoryCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          IconBadge(icon: Icons.analytics_rounded, color: color, size: 52),
+          IconBadge(
+            icon: Icons.analytics_rounded,
+            color: color,
+            size: 52,
+            showBackground: false,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -282,35 +281,40 @@ class _HistoryCard extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           SizedBox(
-            width: 72,
+            width: 74,
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                IconButton(
-                  tooltip: isSaved ? 'Saved' : 'Save',
-                  onPressed: onSave,
-                  color: AppColors.primary,
-                  iconSize: 22,
-                  visualDensity: VisualDensity.compact,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 34,
-                    height: 34,
-                  ),
-                  padding: EdgeInsets.zero,
-                  icon: Icon(
-                    isSaved
-                        ? Icons.bookmark_rounded
-                        : Icons.bookmark_border_rounded,
+                SizedBox(
+                  width: 34,
+                  height: 34,
+                  child: IconButton(
+                    tooltip: isSaved ? 'Saved' : 'Save',
+                    onPressed: onSave,
+                    color: AppColors.primary,
+                    iconSize: 22,
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 34,
+                      height: 34,
+                    ),
+                    padding: EdgeInsets.zero,
+                    icon: Icon(
+                      isSaved
+                          ? Icons.bookmark_rounded
+                          : Icons.bookmark_border_rounded,
+                    ),
                   ),
                 ),
                 PopupMenuButton<String>(
                   tooltip: 'More',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints.tightFor(
+                  child: const SizedBox(
                     width: 34,
                     height: 34,
+                    child: Icon(Icons.more_vert_rounded, size: 22),
                   ),
-                  icon: const Icon(Icons.more_vert_rounded, size: 22),
                   onSelected: (value) {
                     if (value == 'delete') {
                       onDelete();
@@ -339,5 +343,52 @@ class _HistoryCard extends StatelessWidget {
   String _displayText(String value, {required String fallback}) {
     final text = value.trim();
     return text.isEmpty ? fallback : text;
+  }
+}
+
+class _FilterButton extends StatelessWidget {
+  const _FilterButton({
+    required this.selected,
+    required this.label,
+    required this.onTap,
+  });
+
+  final bool selected;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          height: 36,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primary : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: selected ? AppColors.primary : AppColors.border,
+            ),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: selected ? Colors.white : AppColors.ink,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

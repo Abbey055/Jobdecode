@@ -172,23 +172,34 @@ class JobAnalysisRepository {
   }
 
   Future<List<JobAnalysis>> _fetchSavedAnalyses() async {
-    final rows = await _client
+    final savedRows = await _client
         .from('saved_jobs')
-        .select('saved_at, job_analyses(*)')
+        .select('job_analysis_id')
         .eq('user_id', _currentUserId!)
         .order('saved_at', ascending: false)
         .limit(100);
 
-    return rows
-        .map<JobAnalysis?>((row) {
-          final analysis = row['job_analyses'];
-          if (analysis is! Map) {
-            return null;
-          }
-          return JobAnalysis.fromDatabase(Map<String, dynamic>.from(analysis));
-        })
-        .whereType<JobAnalysis>()
+    final orderedIds = savedRows
+        .map<String>((row) => row['job_analysis_id'].toString())
         .toList();
+
+    if (orderedIds.isEmpty) {
+      return const [];
+    }
+
+    final rows = await _client
+        .from('job_analyses')
+        .select()
+        .inFilter('id', orderedIds);
+
+    final byId = {
+      for (final row in rows)
+        row['id'].toString(): JobAnalysis.fromDatabase(
+          Map<String, dynamic>.from(row),
+        ),
+    };
+
+    return orderedIds.map((id) => byId[id]).whereType<JobAnalysis>().toList();
   }
 
   List<JobAnalysis> _filterAnalyses(List<JobAnalysis> analyses, String search) {
@@ -202,6 +213,8 @@ class JobAnalysisRepository {
         analysis.jobTitle,
         analysis.company,
         analysis.location,
+        analysis.applicationDeadline,
+        analysis.postedBy,
         analysis.industry,
         analysis.employmentType,
         analysis.jobSummary,

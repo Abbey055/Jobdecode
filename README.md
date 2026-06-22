@@ -105,13 +105,22 @@ JobDecode helps users:
 
 ## Android Build
 
+Share the latest Android APK with this link after the GitHub release workflow
+has run at least once:
+
+```text
+https://github.com/Abbey055/Jobdecode/releases/latest/download/jobdecode.apk
+```
+
 The release APK is generated locally at:
 
 ```text
 build/app/outputs/flutter-apk/app-release.apk
 ```
 
-For public distribution, upload the APK to GitHub Releases instead of committing build output to the repository.
+For public distribution, push a version tag such as `v1.0.0` or run the
+`Release Android APK` workflow manually. The workflow uploads the APK to GitHub
+Releases as `jobdecode.apk`, which keeps the share link above stable.
 
 ## Local Development
 

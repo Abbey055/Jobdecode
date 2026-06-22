@@ -6,6 +6,8 @@ class JobAnalysis {
     required this.company,
     required this.location,
     required this.datePosted,
+    required this.applicationDeadline,
+    required this.postedBy,
     required this.industry,
     required this.employmentType,
     required this.requiredSkills,
@@ -32,6 +34,8 @@ class JobAnalysis {
   final String company;
   final String location;
   final String datePosted;
+  final String applicationDeadline;
+  final String postedBy;
   final String industry;
   final String employmentType;
   final List<String> requiredSkills;
@@ -59,6 +63,12 @@ class JobAnalysis {
       company: _readString(json, ['company']),
       location: _readString(json, ['location']),
       datePosted: _readString(json, ['datePosted', 'date_posted']),
+      applicationDeadline: _readString(json, [
+        'applicationDeadline',
+        'application_deadline',
+        'deadline',
+      ]),
+      postedBy: _readString(json, ['postedBy', 'posted_by', 'posted_by_name']),
       industry: _readString(json, ['industry']),
       employmentType: _readString(json, ['employmentType', 'employment_type']),
       requiredSkills: _readList(
@@ -134,6 +144,8 @@ class JobAnalysis {
     String? company,
     String? location,
     String? datePosted,
+    String? applicationDeadline,
+    String? postedBy,
     String? industry,
     String? employmentType,
     List<String>? requiredSkills,
@@ -160,6 +172,8 @@ class JobAnalysis {
       company: company ?? this.company,
       location: location ?? this.location,
       datePosted: datePosted ?? this.datePosted,
+      applicationDeadline: applicationDeadline ?? this.applicationDeadline,
+      postedBy: postedBy ?? this.postedBy,
       industry: industry ?? this.industry,
       employmentType: employmentType ?? this.employmentType,
       requiredSkills: requiredSkills ?? this.requiredSkills,
@@ -202,6 +216,8 @@ class JobAnalysis {
         'company': company,
         'location': location,
         'datePosted': datePosted,
+        'applicationDeadline': applicationDeadline,
+        'postedBy': postedBy,
         'industry': industry,
         'employmentType': employmentType,
         'requiredSkills': requiredSkills,
@@ -231,6 +247,8 @@ class JobAnalysis {
       'company': company,
       'location': location,
       'datePosted': datePosted,
+      'applicationDeadline': applicationDeadline,
+      'postedBy': postedBy,
       'industry': industry,
       'employmentType': employmentType,
       'requiredSkills': requiredSkills,

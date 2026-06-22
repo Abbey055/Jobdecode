@@ -64,11 +64,13 @@ class IconBadge extends StatelessWidget {
     required this.icon,
     this.color = AppColors.primary,
     this.size = 38,
+    this.showBackground = true,
   });
 
   final IconData icon;
   final Color color;
   final double size;
+  final bool showBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +78,7 @@ class IconBadge extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .12),
+        color: showBackground ? color.withValues(alpha: .12) : null,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(icon, color: color, size: size * .54),
@@ -90,11 +92,13 @@ class InfoRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    this.iconColor,
   });
 
   final IconData icon;
   final String label;
   final String value;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +106,11 @@ class InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface),
+          Icon(
+            icon,
+            size: 20,
+            color: iconColor ?? Theme.of(context).colorScheme.onSurface,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

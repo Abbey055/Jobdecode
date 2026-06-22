@@ -95,6 +95,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                                     icon: Icons.bookmark_rounded,
                                     color: AppColors.primary,
                                     size: 52,
+                                    showBackground: false,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(

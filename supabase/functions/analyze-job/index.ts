@@ -129,6 +129,8 @@ JSON shape:
   "company": "",
   "location": "",
   "datePosted": "",
+  "applicationDeadline": "",
+  "postedBy": "",
   "industry": "",
   "employmentType": "",
   "requiredSkills": [],
@@ -153,6 +155,8 @@ Rules:
 - Write simpleLugandaExplanation in clear Luganda, not English.
 - Summarize complex HR wording clearly.
 - Extract only information present in the posting.
+- applicationDeadline should include the closing date and time when both are present.
+- postedBy should be the named person, department, recruiter, platform account, or organization that posted the job when stated.
 - If a field is not available, return an empty string or empty array.
 - Difficulty level must be one of: Beginner, Intermediate, Advanced.
 - confidenceScore must be a number from 0 to 100.
@@ -208,6 +212,8 @@ function normalizeAnalysis(value: Record<string, unknown>) {
     company: asString(value.company),
     location: asString(value.location),
     datePosted: asString(value.datePosted),
+    applicationDeadline: asString(value.applicationDeadline),
+    postedBy: asString(value.postedBy),
     industry: asString(value.industry),
     employmentType: asString(value.employmentType),
     requiredSkills: asStringArray(value.requiredSkills),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/app_config.dart';
@@ -195,15 +196,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       }
 
       _refreshAccountData();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _busy = false;
+        _clearAuthInputs();
+      });
       _show('Signed in.');
-      setState(() {});
+      context.go('/saved');
     } on AuthException catch (error) {
       _show(_friendlyAuthMessage(error.message));
     } finally {
-      if (mounted) {
+      if (mounted && _busy) {
         setState(() => _busy = false);
       }
     }
+  }
+
+  void _clearAuthInputs() {
+    _emailController.clear();
+    _phoneController.clear();
+    _codeController.clear();
+    _sentTo = null;
+    _sentChannel = null;
+    _accountNotice = null;
   }
 
   String? _readDestination() {
@@ -324,13 +341,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             JDCard(
               child: Row(
                 children: [
-                  IconBadge(
-                    icon: user == null
-                        ? Icons.person_outline_rounded
-                        : Icons.person_rounded,
-                    color: AppColors.primary,
-                    size: 56,
-                  ),
+                  _ProfileAvatar(user: user),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
@@ -592,6 +603,79 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       ),
     );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({required this.user});
+
+  final User? user;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = _profileImageUrl(user);
+    final label = user?.email ?? user?.phone ?? '';
+    final initial = label.trim().isEmpty ? '?' : label.trim()[0].toUpperCase();
+
+    Widget fallback() {
+      if (user == null) {
+        return const Icon(
+          Icons.person_outline_rounded,
+          color: AppColors.primary,
+          size: 28,
+        );
+      }
+
+      return Text(
+        initial,
+        style: const TextStyle(
+          color: AppColors.primary,
+          fontSize: 22,
+          fontWeight: FontWeight.w900,
+          height: 1,
+        ),
+      );
+    }
+
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: .1),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: imageUrl == null
+          ? Center(child: fallback())
+          : Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Center(child: fallback());
+              },
+            ),
+    );
+  }
+
+  String? _profileImageUrl(User? user) {
+    final metadata = user?.userMetadata;
+    if (metadata == null) {
+      return null;
+    }
+
+    for (final key in ['avatar_url', 'picture', 'photo_url']) {
+      final value = metadata[key]?.toString().trim();
+      final uri = Uri.tryParse(value ?? '');
+      if (value != null &&
+          value.isNotEmpty &&
+          uri != null &&
+          (uri.scheme == 'http' || uri.scheme == 'https') &&
+          uri.host.isNotEmpty) {
+        return value;
+      }
+    }
+
+    return null;
   }
 }
 

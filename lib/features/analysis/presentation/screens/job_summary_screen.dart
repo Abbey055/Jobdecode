@@ -56,7 +56,7 @@ class JobSummaryScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppColors.primary, AppColors.primaryDark],
@@ -73,34 +73,41 @@ class JobSummaryScreen extends ConsumerWidget {
                 ],
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 68,
-                    height: 68,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .18),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(
+                  const SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Icon(
                       Icons.work_rounded,
-                      color: Colors.white,
-                      size: 34,
+                      color: Color(0xFFFDE68A),
+                      size: 38,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          analysis.jobTitle,
+                          _displayValue(
+                            analysis.jobTitle,
+                            fallback: 'Untitled job',
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(
                             context,
                           ).textTheme.titleLarge?.copyWith(color: Colors.white),
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          analysis.company,
+                          _displayValue(
+                            analysis.company,
+                            fallback: 'Unknown company',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 color: Colors.white,
@@ -110,11 +117,13 @@ class JobSummaryScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         _HeaderMeta(
                           icon: Icons.location_on_outlined,
-                          text: analysis.location,
+                          color: const Color(0xFFA7F3D0),
+                          text: _displayValue(analysis.location),
                         ),
                         const SizedBox(height: 9),
                         _HeaderMeta(
                           icon: Icons.calendar_today_outlined,
+                          color: const Color(0xFFFDE68A),
                           text: analysis.datePosted.isEmpty
                               ? compactDate(analysis.createdAt)
                               : analysis.datePosted,
@@ -131,6 +140,7 @@ class JobSummaryScreen extends ConsumerWidget {
                 children: [
                   InfoRow(
                     icon: Icons.business_center_outlined,
+                    iconColor: AppColors.primary,
                     label: 'Experience',
                     value: analysis.requiredExperience.replaceAll(
                       ' of experience in data analysis or a related role.',
@@ -140,6 +150,7 @@ class JobSummaryScreen extends ConsumerWidget {
                   const Divider(height: 1),
                   InfoRow(
                     icon: Icons.school_outlined,
+                    iconColor: AppColors.violet,
                     label: 'Education',
                     value: analysis.requiredEducation.contains("Bachelor")
                         ? "Bachelor's Degree"
@@ -148,14 +159,30 @@ class JobSummaryScreen extends ConsumerWidget {
                   const Divider(height: 1),
                   InfoRow(
                     icon: Icons.badge_outlined,
+                    iconColor: AppColors.accent,
                     label: 'Job Type',
                     value: analysis.employmentType,
                   ),
                   const Divider(height: 1),
                   InfoRow(
                     icon: Icons.apartment_outlined,
+                    iconColor: AppColors.secondary,
                     label: 'Industry',
                     value: analysis.industry,
+                  ),
+                  const Divider(height: 1),
+                  InfoRow(
+                    icon: Icons.event_available_outlined,
+                    iconColor: const Color(0xFFDC2626),
+                    label: 'Deadline',
+                    value: analysis.applicationDeadline,
+                  ),
+                  const Divider(height: 1),
+                  InfoRow(
+                    icon: Icons.campaign_outlined,
+                    iconColor: const Color(0xFF0891B2),
+                    label: 'Posted By',
+                    value: analysis.postedBy,
                   ),
                 ],
               ),
@@ -231,23 +258,35 @@ class JobSummaryScreen extends ConsumerWidget {
       );
     }
   }
+
+  String _displayValue(String value, {String fallback = 'Not listed'}) {
+    final text = value.trim();
+    return text.isEmpty ? fallback : text;
+  }
 }
 
 class _HeaderMeta extends StatelessWidget {
-  const _HeaderMeta({required this.icon, required this.text});
+  const _HeaderMeta({
+    required this.icon,
+    required this.color,
+    required this.text,
+  });
 
   final IconData icon;
+  final Color color;
   final String text;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: Colors.white, size: 18),
+        Icon(icon, color: color, size: 18),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w700,
