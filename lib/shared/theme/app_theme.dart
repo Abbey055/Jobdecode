@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 class AppColors {
   const AppColors._();
 
-  static const primary = Color(0xFF2563EB);
-  static const primaryDark = Color(0xFF1D4ED8);
-  static const secondary = Color(0xFF10B981);
-  static const accent = Color(0xFFF59E0B);
-  static const ink = Color(0xFF0F172A);
-  static const muted = Color(0xFF64748B);
-  static const soft = Color(0xFFF8FAFC);
-  static const border = Color(0xFFE2E8F0);
-  static const violet = Color(0xFF7C3AED);
+  static const primary = Color(0xFF8B7BE8);
+  static const primaryDark = Color(0xFF5D4EC7);
+  static const secondary = Color(0xFF12A174);
+  static const accent = Color(0xFFF3A4A7);
+  static const gold = Color(0xFFF4B860);
+  static const ink = Color(0xFF10252A);
+  static const muted = Color(0xFF6B7376);
+  static const canvas = Color(0xFFF1EEFF);
+  static const soft = Color(0xFFFFF8F6);
+  static const border = Color(0xFFDDD3CD);
+  static const violet = Color(0xFF7467D8);
 }
 
 class AppTheme {
@@ -19,7 +21,7 @@ class AppTheme {
 
   static ThemeData light() {
     return _base(Brightness.light).copyWith(
-      scaffoldBackgroundColor: Colors.white,
+      scaffoldBackgroundColor: AppColors.canvas,
       colorScheme:
           ColorScheme.fromSeed(
             seedColor: AppColors.primary,
@@ -27,7 +29,7 @@ class AppTheme {
           ).copyWith(
             primary: AppColors.primary,
             secondary: AppColors.secondary,
-            surface: Colors.white,
+            surface: AppColors.soft,
             onSurface: AppColors.ink,
           ),
     );
@@ -59,6 +61,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
+      fontFamily: 'Inter',
       colorScheme: scheme,
       visualDensity: VisualDensity.standard,
       appBarTheme: AppBarTheme(
@@ -70,7 +73,7 @@ class AppTheme {
         titleTextStyle: TextStyle(
           color: isDark ? Colors.white : AppColors.ink,
           fontWeight: FontWeight.w800,
-          fontSize: 16,
+          fontSize: 18,
           letterSpacing: 0,
         ),
       ),
@@ -113,15 +116,15 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          minimumSize: const Size.fromHeight(54),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+          minimumSize: const Size.fromHeight(56),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
           textStyle: const TextStyle(
             fontWeight: FontWeight.w800,
-            fontSize: 15,
+            fontSize: 16,
             letterSpacing: 0,
           ),
         ),
@@ -133,7 +136,7 @@ class AppTheme {
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return TextStyle(
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
             color: selected
                 ? AppColors.primary
@@ -150,37 +153,37 @@ class AppTheme {
         contentTextStyle: TextStyle(
           color: isDark ? Colors.white : AppColors.ink,
           fontWeight: FontWeight.w700,
-          fontSize: 13,
+          fontSize: 14,
           letterSpacing: 0,
         ),
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
-          fontSize: 28,
+          fontSize: 32,
           fontWeight: FontWeight.w900,
           height: 1.1,
           letterSpacing: 0,
         ),
         headlineMedium: TextStyle(
-          fontSize: 22,
+          fontSize: 25,
           fontWeight: FontWeight.w900,
           height: 1.15,
           letterSpacing: 0,
         ),
         titleLarge: TextStyle(
-          fontSize: 18,
+          fontSize: 21,
           fontWeight: FontWeight.w800,
           letterSpacing: 0,
         ),
         titleMedium: TextStyle(
-          fontSize: 15,
+          fontSize: 17,
           fontWeight: FontWeight.w800,
           letterSpacing: 0,
         ),
-        bodyLarge: TextStyle(fontSize: 15, height: 1.55, letterSpacing: 0),
-        bodyMedium: TextStyle(fontSize: 13, height: 1.45, letterSpacing: 0),
+        bodyLarge: TextStyle(fontSize: 17, height: 1.55, letterSpacing: 0),
+        bodyMedium: TextStyle(fontSize: 15, height: 1.45, letterSpacing: 0),
         labelLarge: TextStyle(
-          fontSize: 14,
+          fontSize: 15,
           fontWeight: FontWeight.w800,
           letterSpacing: 0,
         ),

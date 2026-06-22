@@ -28,7 +28,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     );
     final savedIdsAsync = ref.watch(savedJobIdsProvider);
     final savedIds = savedIdsAsync.value ?? const <String>{};
-    final isSignedIn = ref.watch(isSignedInProvider);
+    final isSignedInAsync = ref.watch(isSignedInProvider);
+    final isSignedIn = isSignedInAsync.value ?? false;
 
     return AppScreen(
       currentIndex: 1,

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/analysis/presentation/screens/analysis_loading_screen.dart';
@@ -25,66 +24,60 @@ final appRouter = GoRouter(
       path: '/loading',
       pageBuilder: (context, state) {
         final jobUrl = state.uri.queryParameters['url'] ?? '';
-        return _fadePage(state.pageKey, AnalysisLoadingScreen(jobUrl: jobUrl));
+        return NoTransitionPage(
+          key: state.pageKey,
+          child: AnalysisLoadingScreen(jobUrl: jobUrl),
+        );
       },
     ),
     GoRoute(
       path: '/summary',
       pageBuilder: (context, state) =>
-          _fadePage(state.pageKey, const JobSummaryScreen()),
+          NoTransitionPage(key: state.pageKey, child: const JobSummaryScreen()),
     ),
     GoRoute(
       path: '/wants',
       pageBuilder: (context, state) =>
-          _fadePage(state.pageKey, const JobWantsScreen()),
+          NoTransitionPage(key: state.pageKey, child: const JobWantsScreen()),
     ),
     GoRoute(
       path: '/description',
-      pageBuilder: (context, state) =>
-          _fadePage(state.pageKey, const JobDescriptionScreen()),
+      pageBuilder: (context, state) => NoTransitionPage(
+        key: state.pageKey,
+        child: const JobDescriptionScreen(),
+      ),
     ),
     GoRoute(
       path: '/fit',
       pageBuilder: (context, state) =>
-          _fadePage(state.pageKey, const FitScreen()),
+          NoTransitionPage(key: state.pageKey, child: const FitScreen()),
     ),
     GoRoute(
       path: '/full-description',
-      pageBuilder: (context, state) =>
-          _fadePage(state.pageKey, const FullDescriptionScreen()),
+      pageBuilder: (context, state) => NoTransitionPage(
+        key: state.pageKey,
+        child: const FullDescriptionScreen(),
+      ),
     ),
     GoRoute(
       path: '/history',
       pageBuilder: (context, state) =>
-          _fadePage(state.pageKey, const HistoryScreen()),
+          NoTransitionPage(key: state.pageKey, child: const HistoryScreen()),
     ),
     GoRoute(
       path: '/saved',
       pageBuilder: (context, state) =>
-          _fadePage(state.pageKey, const SavedScreen()),
+          NoTransitionPage(key: state.pageKey, child: const SavedScreen()),
     ),
     GoRoute(
       path: '/profile',
       pageBuilder: (context, state) =>
-          _fadePage(state.pageKey, const ProfileScreen()),
+          NoTransitionPage(key: state.pageKey, child: const ProfileScreen()),
     ),
     GoRoute(
       path: '/premium',
       pageBuilder: (context, state) =>
-          _fadePage(state.pageKey, const PremiumScreen()),
+          NoTransitionPage(key: state.pageKey, child: const PremiumScreen()),
     ),
   ],
 );
-
-CustomTransitionPage<void> _fadePage(LocalKey key, Widget child) {
-  return CustomTransitionPage<void>(
-    key: key,
-    child: child,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-        child: child,
-      );
-    },
-  );
-}

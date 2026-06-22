@@ -18,11 +18,30 @@ class JobAnalysisException implements Exception {
 
 class JobAnalysisRepository {
   static const _localHistoryKey = 'jobdecode_local_history_v1';
+  static const _localSavedIdsKey = 'jobdecode_local_saved_ids_v1';
   static const _genericAnalysisError =
       'We could not finish this analysis right now. Please try again in a moment.';
 
   bool get isSignedIn =>
       AppConfig.supabaseClientOrNull?.auth.currentUser != null;
+
+  Stream<bool> watchSignedIn() async* {
+    if (!await AppConfig.ensureSupabaseReady()) {
+      yield false;
+      return;
+    }
+
+    final client = AppConfig.supabaseClientOrNull;
+    if (client == null) {
+      yield false;
+      return;
+    }
+
+    yield client.auth.currentUser != null;
+    yield* client.auth.onAuthStateChange.map(
+      (state) => state.session?.user != null,
+    );
+  }
 
   Future<JobAnalysis> analyzeUrl(String url) async {
     if (!await AppConfig.ensureSupabaseReady()) {
@@ -62,9 +81,9 @@ class JobAnalysisRepository {
     String search = '',
     bool savedOnly = false,
   }) async {
-    if (!AppConfig.hasSupabaseConfig || _currentUserId == null) {
+    if (!await AppConfig.ensureSupabaseReady() || _currentUserId == null) {
       if (savedOnly) {
-        return const [];
+        return _filterAnalyses(await _fetchLocalSavedAnalyses(), search);
       }
       return _filterAnalyses(await _fetchLocalAnalyses(), search);
     }
@@ -80,16 +99,18 @@ class JobAnalysisRepository {
   }
 
   Future<List<JobAnalysis>> fetchSavedAnalyses({String search = ''}) async {
-    if (!AppConfig.hasSupabaseConfig || _currentUserId == null) {
-      return const [];
+    if (!await AppConfig.ensureSupabaseReady() || _currentUserId == null) {
+      return _filterAnalyses(await _fetchLocalSavedAnalyses(), search);
     }
 
     return _filterAnalyses(await _fetchSavedAnalyses(), search);
   }
 
   Future<Set<String>> fetchSavedJobIds() async {
-    if (!AppConfig.hasSupabaseConfig || _currentUserId == null) {
-      return const {};
+    final localIds = await _fetchLocalSavedIds();
+
+    if (!await AppConfig.ensureSupabaseReady() || _currentUserId == null) {
+      return localIds;
     }
 
     final rows = await _client
@@ -97,34 +118,41 @@ class JobAnalysisRepository {
         .select('job_analysis_id')
         .eq('user_id', _currentUserId!);
 
-    return rows.map<String>((row) => row['job_analysis_id'].toString()).toSet();
+    return {
+      ...localIds,
+      ...rows.map<String>((row) => row['job_analysis_id'].toString()),
+    };
   }
 
   Future<void> saveJob(String analysisId) async {
-    final userId = _requireUserId();
+    final userId = await _requireUserId();
     await _client.from('saved_jobs').upsert({
       'user_id': userId,
       'job_analysis_id': analysisId,
     }, onConflict: 'user_id,job_analysis_id');
+    await _addLocalSavedId(analysisId);
   }
 
   Future<void> unsaveJob(String analysisId) async {
-    final userId = _requireUserId();
+    final userId = await _requireUserId();
     await _client
         .from('saved_jobs')
         .delete()
         .eq('user_id', userId)
         .eq('job_analysis_id', analysisId);
+    await _removeLocalSavedId(analysisId);
   }
 
   Future<void> deleteAnalysis(String analysisId) async {
-    if (!AppConfig.hasSupabaseConfig) {
+    if (!await AppConfig.ensureSupabaseReady()) {
       await _removeLocalAnalysis(analysisId);
+      await _removeLocalSavedId(analysisId);
       return;
     }
     final userId = _currentUserId;
     if (userId == null) {
       await _removeLocalAnalysis(analysisId);
+      await _removeLocalSavedId(analysisId);
       return;
     }
     await _client
@@ -133,6 +161,7 @@ class JobAnalysisRepository {
         .eq('id', analysisId)
         .eq('user_id', userId);
     await _removeLocalAnalysis(analysisId);
+    await _removeLocalSavedId(analysisId);
   }
 
   SupabaseClient get _client {
@@ -148,7 +177,8 @@ class JobAnalysisRepository {
   String? get _currentUserId =>
       AppConfig.supabaseClientOrNull?.auth.currentUser?.id;
 
-  String _requireUserId() {
+  Future<String> _requireUserId() async {
+    await AppConfig.ensureSupabaseReady();
     final userId = _currentUserId;
     if (userId == null) {
       throw const JobAnalysisException('Sign in to save and track jobs.');
@@ -172,6 +202,11 @@ class JobAnalysisRepository {
   }
 
   Future<List<JobAnalysis>> _fetchSavedAnalyses() async {
+    final localAnalyses = await _fetchLocalAnalyses();
+    final localById = {
+      for (final analysis in localAnalyses) analysis.id: analysis,
+    };
+    final localSavedIds = await _fetchLocalSavedIds();
     final savedRows = await _client
         .from('saved_jobs')
         .select('job_analysis_id')
@@ -179,20 +214,28 @@ class JobAnalysisRepository {
         .order('saved_at', ascending: false)
         .limit(100);
 
-    final orderedIds = savedRows
+    final remoteIds = savedRows
         .map<String>((row) => row['job_analysis_id'].toString())
         .toList();
+    final orderedIds = [
+      ...remoteIds,
+      ...localSavedIds.where((id) => !remoteIds.contains(id)),
+    ];
 
     if (orderedIds.isEmpty) {
       return const [];
     }
 
-    final rows = await _client
-        .from('job_analyses')
-        .select()
-        .inFilter('id', orderedIds);
+    final remoteLookupIds = orderedIds.where(_looksLikeUuid).toList();
+    final rows = remoteLookupIds.isEmpty
+        ? const []
+        : await _client
+              .from('job_analyses')
+              .select()
+              .inFilter('id', remoteLookupIds);
 
     final byId = {
+      ...localById,
       for (final row in rows)
         row['id'].toString(): JobAnalysis.fromDatabase(
           Map<String, dynamic>.from(row),
@@ -293,6 +336,45 @@ class JobAnalysisRepository {
         .map((item) => jsonEncode(item.toJson()))
         .toList();
     await prefs.setStringList(_localHistoryKey, remaining);
+  }
+
+  Future<List<JobAnalysis>> _fetchLocalSavedAnalyses() async {
+    final savedIds = await _fetchLocalSavedIds();
+    if (savedIds.isEmpty) {
+      return const [];
+    }
+
+    return (await _fetchLocalAnalyses())
+        .where((analysis) => savedIds.contains(analysis.id))
+        .toList();
+  }
+
+  Future<Set<String>> _fetchLocalSavedIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (prefs.getStringList(_localSavedIdsKey) ?? const [])
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toSet();
+  }
+
+  Future<void> _addLocalSavedId(String analysisId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedIds = await _fetchLocalSavedIds();
+    savedIds.add(analysisId);
+    await prefs.setStringList(_localSavedIdsKey, savedIds.toList());
+  }
+
+  Future<void> _removeLocalSavedId(String analysisId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedIds = await _fetchLocalSavedIds();
+    savedIds.remove(analysisId);
+    await prefs.setStringList(_localSavedIdsKey, savedIds.toList());
+  }
+
+  bool _looksLikeUuid(String value) {
+    return RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    ).hasMatch(value);
   }
 
   List<JobAnalysis> _mergeAnalyses(

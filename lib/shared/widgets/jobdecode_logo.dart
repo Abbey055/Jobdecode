@@ -28,7 +28,7 @@ class JobDecodeLogo extends StatelessWidget {
             style: TextStyle(color: textColor),
           ),
           const TextSpan(
-            text: 'Summary',
+            text: 'Decode',
             style: TextStyle(color: AppColors.primary),
           ),
         ],
@@ -51,7 +51,7 @@ class JobDecodeLogo extends StatelessWidget {
                 'Understand any job in seconds',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.ink,
-                  fontSize: 8.5,
+                  fontSize: 10.5,
                   height: 1,
                   fontWeight: FontWeight.w600,
                 ),
@@ -82,7 +82,7 @@ class LogoMark extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryDark],
+                  colors: [AppColors.ink, AppColors.primaryDark],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -119,7 +119,7 @@ class LogoMark extends StatelessWidget {
               ),
               child: Icon(
                 Icons.work_rounded,
-                color: AppColors.secondary,
+                color: AppColors.accent,
                 size: size * .24,
               ),
             ),

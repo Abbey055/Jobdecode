@@ -321,6 +321,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(isSignedInProvider);
     final user = AppConfig.supabaseClientOrNull?.auth.currentUser;
     final isCodeSent = _sentTo != null;
 

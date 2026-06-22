@@ -23,7 +23,10 @@ class JobSummaryScreen extends ConsumerWidget {
     final savedIdsAsync = ref.watch(savedJobIdsProvider);
     final savedIds = savedIdsAsync.value ?? const <String>{};
     final isSaved = savedIds.contains(analysis.id);
-    final isSignedIn = ref.watch(isSignedInProvider);
+    final isSignedInAsync = ref.watch(isSignedInProvider);
+    final isSignedIn = isSignedInAsync.value ?? false;
+    final isAuthLoading =
+        isSignedInAsync.isLoading && !isSignedInAsync.hasValue;
 
     return AppScreen(
       child: SingleChildScrollView(
@@ -36,7 +39,7 @@ class JobSummaryScreen extends ConsumerWidget {
               onBack: () => context.go('/'),
               trailing: IconButton(
                 tooltip: isSaved ? 'Unsave job' : 'Save job',
-                onPressed: savedIdsAsync.isLoading
+                onPressed: savedIdsAsync.isLoading || isAuthLoading
                     ? null
                     : () => _toggleSaved(
                         context,
@@ -152,9 +155,7 @@ class JobSummaryScreen extends ConsumerWidget {
                     icon: Icons.school_outlined,
                     iconColor: AppColors.violet,
                     label: 'Education',
-                    value: analysis.requiredEducation.contains("Bachelor")
-                        ? "Bachelor's Degree"
-                        : analysis.requiredEducation,
+                    value: analysis.requiredEducation,
                   ),
                   const Divider(height: 1),
                   InfoRow(
@@ -181,7 +182,7 @@ class JobSummaryScreen extends ConsumerWidget {
                   InfoRow(
                     icon: Icons.campaign_outlined,
                     iconColor: const Color(0xFF0891B2),
-                    label: 'Posted By',
+                    label: 'Hiring Entity',
                     value: analysis.postedBy,
                   ),
                 ],

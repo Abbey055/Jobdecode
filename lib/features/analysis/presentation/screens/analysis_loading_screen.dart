@@ -56,7 +56,7 @@ class _AnalysisLoadingScreenState extends ConsumerState<AnalysisLoadingScreen> {
     });
 
     _stepTimer?.cancel();
-    _stepTimer = Timer.periodic(const Duration(milliseconds: 520), (_) {
+    _stepTimer = Timer.periodic(const Duration(seconds: 6), (_) {
       if (!mounted) {
         return;
       }
@@ -78,7 +78,11 @@ class _AnalysisLoadingScreenState extends ConsumerState<AnalysisLoadingScreen> {
       ref.read(currentAnalysisProvider.notifier).setAnalysis(analysis);
       ref.invalidate(historyProvider);
 
-      await Future<void>.delayed(const Duration(milliseconds: 260));
+      await Future<void>.delayed(const Duration(milliseconds: 650));
+      if (!mounted) {
+        return;
+      }
+
       if (mounted) {
         context.go('/summary');
       }
@@ -115,21 +119,21 @@ class _AnalysisLoadingScreenState extends ConsumerState<AnalysisLoadingScreen> {
             const SizedBox(height: 16),
             Center(
               child: Text(
-                _error == null ? 'Analyzing Job...' : 'Analysis paused',
+                _error == null ? 'Analyzing Job...' : 'Analysis stopped',
                 style: Theme.of(
                   context,
-                ).textTheme.headlineMedium?.copyWith(fontSize: 18, height: 1.1),
+                ).textTheme.headlineMedium?.copyWith(fontSize: 22, height: 1.1),
               ),
             ),
             const SizedBox(height: 6),
             Center(
               child: Text(
                 _error == null
-                    ? 'Please wait a few seconds'
-                    : 'Check the link and try again.',
+                    ? 'This can take up to 45 seconds'
+                    : 'Try again or use a different job link.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.muted,
-                  fontSize: 10.5,
+                  fontSize: 13,
                   height: 1.2,
                   fontWeight: FontWeight.w600,
                 ),
@@ -199,8 +203,8 @@ class _ProgressStep extends StatelessWidget {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 220),
-            width: 20,
-            height: 20,
+            width: 22,
+            height: 22,
             decoration: BoxDecoration(
               color: completed ? AppColors.primary : Colors.transparent,
               shape: BoxShape.circle,
@@ -212,7 +216,7 @@ class _ProgressStep extends StatelessWidget {
               ),
             ),
             child: completed
-                ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                ? const Icon(Icons.check_rounded, color: Colors.white, size: 15)
                 : active
                 ? const Padding(
                     padding: EdgeInsets.all(4),
@@ -225,7 +229,8 @@ class _ProgressStep extends StatelessWidget {
             child: Text(
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontSize: 11,
+                fontSize: 13.5,
+                color: AppColors.ink,
                 height: 1.1,
                 fontWeight: FontWeight.w800,
               ),
@@ -246,7 +251,7 @@ class _TipPanel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: AppColors.soft,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -279,10 +284,10 @@ class _TipPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'This usually takes 10-20 seconds.',
+                  'Some job pages take longer to read and summarize.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.muted,
-                    fontSize: 10.5,
+                    fontSize: 12.5,
                     height: 1.25,
                     fontWeight: FontWeight.w600,
                   ),

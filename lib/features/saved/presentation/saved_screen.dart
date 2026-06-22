@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../features/analysis/domain/job_analysis.dart';
 import '../../../features/analysis/presentation/providers/analysis_providers.dart';
 import '../../../shared/theme/app_theme.dart';
 import '../../../shared/widgets/app_screen.dart';
@@ -22,7 +23,10 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
   @override
   Widget build(BuildContext context) {
     final savedJobsAsync = ref.watch(savedAnalysesProvider(_query));
-    final isSignedIn = ref.watch(isSignedInProvider);
+    final isSignedInAsync = ref.watch(isSignedInProvider);
+    final isSignedIn = isSignedInAsync.value ?? false;
+    final isAuthLoading =
+        isSignedInAsync.isLoading && !isSignedInAsync.hasValue;
 
     return AppScreen(
       currentIndex: 2,
@@ -38,25 +42,17 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
               ),
             ),
             const SizedBox(height: 22),
-            if (!isSignedIn) ...[
-              const SignInRequiredCard(
-                title: 'Sign in to view saved jobs',
-                subtitle:
-                    'Saved jobs are kept in your account so you can open them on any device.',
-              ),
-              const SizedBox(height: 16),
-            ],
             TextField(
-              enabled: isSignedIn,
               onChanged: (value) => setState(() => _query = value),
               decoration: const InputDecoration(
                 hintText: 'Search saved jobs...',
                 prefixIcon: Icon(Icons.search_rounded),
+                suffixIcon: Icon(Icons.search_rounded),
               ),
             ),
             const SizedBox(height: 16),
-            if (!isSignedIn)
-              const SizedBox.shrink()
+            if (isAuthLoading)
+              const LoadingJobList(itemCount: 2)
             else
               savedJobsAsync.when(
                 loading: () => const LoadingJobList(),
@@ -68,6 +64,14 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                 ),
                 data: (savedJobs) {
                   if (savedJobs.isEmpty) {
+                    if (!isSignedIn) {
+                      return const SignInRequiredCard(
+                        title: 'Sign in to view saved jobs',
+                        subtitle:
+                            'Saved jobs are kept in your account so you can open them on any device.',
+                      );
+                    }
+
                     return EmptyState(
                       icon: Icons.bookmark_border_rounded,
                       title: _emptyTitle(isSignedIn),
@@ -132,6 +136,33 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                                                 fontSize: 10.5,
                                                 fontWeight: FontWeight.w700,
                                               ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.schedule_rounded,
+                                              color: AppColors.secondary,
+                                              size: 15,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Expanded(
+                                              child: Text(
+                                                _listDateLabel(job),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: AppColors.muted,
+                                                      fontSize: 10.5,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
@@ -206,5 +237,13 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
   String _displayText(String value, {required String fallback}) {
     final text = value.trim();
     return text.isEmpty ? fallback : text;
+  }
+
+  String _listDateLabel(JobAnalysis analysis) {
+    final raw = analysis.datePosted.trim();
+    if (raw.isEmpty || raw.length > 26 || raw.contains('\n')) {
+      return compactDate(analysis.createdAt);
+    }
+    return raw;
   }
 }

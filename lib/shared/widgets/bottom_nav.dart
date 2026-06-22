@@ -12,7 +12,7 @@ class BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.soft,
         border: Border(top: BorderSide(color: AppColors.border)),
       ),
       child: SafeArea(
@@ -26,34 +26,41 @@ class BottomNav extends StatelessWidget {
                 icon: Icons.home_outlined,
                 selectedIcon: Icons.home_rounded,
                 selected: currentIndex == 0,
-                onTap: () => context.go('/'),
+                onTap: () => _goTo(context, '/'),
               ),
               _NavItem(
                 label: 'History',
                 icon: Icons.history_rounded,
                 selectedIcon: Icons.history_rounded,
                 selected: currentIndex == 1,
-                onTap: () => context.go('/history'),
+                onTap: () => _goTo(context, '/history'),
               ),
               _NavItem(
                 label: 'Saved',
                 icon: Icons.bookmark_border_rounded,
                 selectedIcon: Icons.bookmark_rounded,
                 selected: currentIndex == 2,
-                onTap: () => context.go('/saved'),
+                onTap: () => _goTo(context, '/saved'),
               ),
               _NavItem(
                 label: 'Profile',
                 icon: Icons.person_outline_rounded,
                 selectedIcon: Icons.person_rounded,
                 selected: currentIndex == 3,
-                onTap: () => context.go('/profile'),
+                onTap: () => _goTo(context, '/profile'),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _goTo(BuildContext context, String path) {
+    if (GoRouterState.of(context).uri.path == path) {
+      return;
+    }
+    context.go(path);
   }
 }
 
@@ -89,7 +96,7 @@ class _NavItem extends StatelessWidget {
               label,
               style: TextStyle(
                 color: color,
-                fontSize: 10,
+                fontSize: 11.5,
                 height: 1,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                 letterSpacing: 0,

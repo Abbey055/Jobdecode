@@ -32,14 +32,22 @@ class AppConfig {
     if (!hasSupabaseConfig) {
       return Future.value();
     }
+    if (_supabaseInitialized) {
+      return Future.value();
+    }
 
     return _supabaseInitialization ??=
         Supabase.initialize(
-          url: supabaseUrl,
-          publishableKey: supabasePublishableKey,
-        ).then((_) {
-          _supabaseInitialized = true;
-        });
+              url: supabaseUrl,
+              publishableKey: supabasePublishableKey,
+            )
+            .then((_) {
+              _supabaseInitialized = true;
+            })
+            .catchError((Object error) {
+              _supabaseInitialization = null;
+              throw error;
+            });
   }
 
   static Future<bool> ensureSupabaseReady() async {
@@ -47,7 +55,11 @@ class AppConfig {
       return false;
     }
 
-    await initializeSupabase();
+    try {
+      await initializeSupabase();
+    } catch (_) {
+      return false;
+    }
     return isSupabaseReady;
   }
 }

@@ -24,7 +24,10 @@ class FullDescriptionScreen extends ConsumerWidget {
     final savedIdsAsync = ref.watch(savedJobIdsProvider);
     final savedIds = savedIdsAsync.value ?? const <String>{};
     final isSaved = savedIds.contains(analysis.id);
-    final isSignedIn = ref.watch(isSignedInProvider);
+    final isSignedInAsync = ref.watch(isSignedInProvider);
+    final isSignedIn = isSignedInAsync.value ?? false;
+    final isAuthLoading =
+        isSignedInAsync.isLoading && !isSignedInAsync.hasValue;
 
     return AppScreen(
       child: SingleChildScrollView(
@@ -101,7 +104,7 @@ class FullDescriptionScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 18),
             OutlinedButton.icon(
-              onPressed: savedIdsAsync.isLoading
+              onPressed: savedIdsAsync.isLoading || isAuthLoading
                   ? null
                   : () => _toggleSaved(
                       context,

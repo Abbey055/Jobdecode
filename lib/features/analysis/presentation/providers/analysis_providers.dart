@@ -34,9 +34,10 @@ final savedJobIdsProvider = FutureProvider.autoDispose<Set<String>>((ref) {
   return repository.fetchSavedJobIds();
 });
 
-final isSignedInProvider = Provider<bool>(
-  (ref) => ref.watch(jobAnalysisRepositoryProvider).isSignedIn,
-);
+final isSignedInProvider = StreamProvider<bool>((ref) {
+  final repository = ref.watch(jobAnalysisRepositoryProvider);
+  return repository.watchSignedIn();
+});
 
 class CurrentAnalysisNotifier extends Notifier<JobAnalysis?> {
   @override
